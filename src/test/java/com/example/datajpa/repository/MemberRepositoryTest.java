@@ -130,14 +130,31 @@ class MemberRepositoryTest {
         // when
         Page<Member> members = memberRepository.findByAge(age, pageRequest);
 
+        // total page
         assertEquals(members.getTotalPages(), 2);
+
+        // current page number
         assertEquals(members.getNumber(), 0);
+
+        // total number of elements
         assertEquals(members.getTotalElements(), 6);
+
+        // number of element in the current page
         assertEquals(members.getSize(), 3);
+
+        // has next page?
         assertTrue(members.hasNext());
+
+        // has previous page?
         assertFalse(members.hasPrevious());
+
+        // first element
         assertEquals(members.getContent().get(0).getUsername(), "member6");
+
+        // second element
         assertEquals(members.getContent().get(1).getUsername(), "member5");
+
+        // third element
         assertEquals(members.getContent().get(2).getUsername(), "member4");
     }
 }
