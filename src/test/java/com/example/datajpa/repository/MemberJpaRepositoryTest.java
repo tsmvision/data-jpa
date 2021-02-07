@@ -5,18 +5,25 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@Rollback(value = false)
 class MemberJpaRepositoryTest {
 
     @Autowired
     MemberJpaRepository memberJpaRepository;
+
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -94,5 +101,27 @@ class MemberJpaRepositoryTest {
         assertEquals(members.get(0).getUsername(), "member6");
         assertEquals(members.get(1).getUsername(), "member5");
         assertEquals(members.get(2).getUsername(), "member4");
+    }
+
+    @Test
+    public void bulkUpdate() {
+        memberJpaRepository.save(new Member("member1", 10));
+        memberJpaRepository.save(new Member("member2", 19));
+        memberJpaRepository.save(new Member("member3", 20));
+        memberJpaRepository.save(new Member("member4", 21));
+        memberJpaRepository.save(new Member("member5", 40));
+
+        // when
+        int resultCount = memberJpaRepository.bulkAgePlus(20);
+        assertEquals(resultCount, 3);
+
+        // update data to database
+        em.flush();
+
+        // refresh Persistent Context manually because bulk process doesn't update persistent context automatically.
+        em.clear();
+
+        List<Member> member5 = memberJpaRepository.findByUsername("member5");
+        assertEquals(member5.get(0).getAge(), 41);
     }
 }

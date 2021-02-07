@@ -10,7 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -156,5 +160,21 @@ class MemberRepositoryTest {
 
         // third element
         assertEquals(members.getContent().get(2).getUsername(), "member4");
+    }
+
+    @Test
+    public void bulk() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20);
+        assertEquals(resultCount, 3);
+
+        List<Member> member5 = memberRepository.findByUsername("member5");
+        assertEquals(member5.get(0).getAge(), 41);
     }
 }
