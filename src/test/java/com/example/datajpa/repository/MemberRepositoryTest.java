@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -29,6 +30,9 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    @Autowired
+    MemberQueryRepository memberQueryRepository;
 
     @PersistenceContext
     EntityManager em;
@@ -201,5 +205,42 @@ class MemberRepositoryTest {
             System.out.println("member = " + member);
             System.out.println("member.teamClass = " + member.getTeam().getClass());
         }
+    }
+
+    @Test
+    public void queryHint() {
+        Member findMember = memberRepository.save(new Member("member1", 10));
+
+        findMember.setUsername("member2");
+        em.flush();
+        em.clear();
+    }
+
+    @Test
+    public void callCustom() {
+
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        List<Member> result = memberRepository.findMemberCustom();
+
+        assertEquals(result.size(), 5);
+    }
+
+    @Test
+    public void testMemberQueryRepo() {
+
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        List<Member> result = memberQueryRepository.findAllMembers();
+
+        assertEquals(result.size(), 5);
     }
 }
