@@ -21,6 +21,9 @@ class MemberTest {
     @PersistenceContext
     EntityManager em;
 
+    @Autowired
+    MemberRepository memberRepository;
+
     @Test
     public void memberTest() {
         Team teamA = new Team("teamA");
@@ -49,6 +52,29 @@ class MemberTest {
             System.out.println("member = " + member);
             System.out.println("-> member.team = " + member.getTeam());
         }
+    }
+
+    @Test
+    public void JpaEventBaseEntity() throws Exception {
+
+        // given
+        Member member = new Member("member1");
+        memberRepository.save(member); // @PrePersist
+
+        Thread.sleep(100);
+        member.setUsername("member2");
+
+        em.flush(); // save data into datagase
+        em.clear(); // clear persistent context
+
+        // when
+        Member findMember = memberRepository.findById(member.getId()).get();
+
+        // then
+        System.out.println("findMember.getCreatedAt = " + findMember.getCreatedAt());
+        System.out.println("findMember.getUpdatedAt = " + findMember.getUpdatedAt());
+        System.out.println("findMember.getCreatedBy = " + findMember.getCreatedBy());
+        System.out.println("findMember.getUpdatedBy = " + findMember.getUpdatedBy());
     }
 
 }
